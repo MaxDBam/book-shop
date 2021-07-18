@@ -88,6 +88,10 @@ function setSortBy(sortBy) {
 
 }
 
+function getCurrentPage() {
+    return gPageIdx;
+}
+
 function nextPage() {
     if (gPageIdx < (gBooks.length - PAGE_SIZE)/PAGE_SIZE) gPageIdx++;
     else return;
