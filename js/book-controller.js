@@ -98,11 +98,21 @@ function onSortChange(sortBy) {
 
 function onNextPage() {
     nextPage();
+    var currPage = getCurrentPage();
+    if (currPage === 0) onToFirstPage();
+    if (currPage === 1) onToSecondPage();
+    if (currPage === 2) onToThirdPage();
+    if (currPage === 3) onToFourthPage();
     renderBooks();
 }
 
 function onPrevPage() {
     prevPage();
+    var currPage = getCurrentPage();
+    if (currPage === 0) onToFirstPage();
+    if (currPage === 1) onToSecondPage();
+    if (currPage === 2) onToThirdPage();
+    if (currPage === 3) onToFourthPage();
     renderBooks();
 }
 
