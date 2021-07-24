@@ -1,6 +1,6 @@
 'use strict';
 
-const gTitle = ['Harry Potter and the Philosophers Stone', 'Harry Potter and the Chamber of Secrets', 'Harry Potter and the Prisoner of Azkaban', 'Harry Potter and the Goblet of Fire', 'Harry Potter and the Order of the Phoenix', 'Harry Potter and the Half Blood Prince', 'Harry Potter and the Deathly Hallows', 'The Hobbit', 'The Lord of the Rings and The Fellowship of the Ring', 'The Lord of the Rings and The Two Towers', 'The Lord of the Rings and The Return of the King', 'Percy Jackson and The Lightning Thief', 'Percy Jackson and The Sea of Monsters', 'Percy Jackson and the Titans Curse', 'Percy Jackson and the Battle of the Labyrinth', 'Percy Jackson and The Last Olympian', 'I, Robot', 'The Book of Five Rings', 'Robinson Crusoe', 'Itamars Squad'];
+const gTitle = ['Harry Potter and the Philosophers Stone', 'Harry Potter and the Chamber of Secrets', 'Harry Potter and the Prisoner of Azkaban', 'Harry Potter and the Goblet of Fire', 'Harry Potter and the Order of the Phoenix', 'Harry Potter and the Half Blood Prince', 'Harry Potter and the Deathly Hallows', 'The Hobbit', 'The Lord of The Rings And The Fellowship of The Ring', 'The Lord of The Rings and The Two Towers', 'The Lord of The Rings and The Return of the King', 'Percy Jackson and The Lightning Thief', 'Percy Jackson and The Sea of Monsters', 'Percy Jackson and the Titans Curse', 'Percy Jackson and the Battle of the Labyrinth', 'Percy Jackson and The Last Olympian', 'I, Robot', 'The Book of Five Rings', 'Robinson Crusoe', 'Itamars Squad'];
 const KEY = 'books';
 var gBooks;
 const PAGE_SIZE = 5;
@@ -12,7 +12,7 @@ function createBooks() {
     if (!books || !books.length) {
         books = [];
         for (let i = 0; i < 20; i++) {
-            const bookImgUrl = `./img/${gTitle[i]}.jpg`;
+            const bookImgUrl = `../img/${gTitle[i]}.jpg`;
             const book = _createBook(gTitle[i], 0, bookImgUrl);
             book.i = i;
             books.push(book);
@@ -92,8 +92,12 @@ function getCurrentPage() {
     return gPageIdx;
 }
 
+function getSumOfBooks() {
+    return gBooks;
+}
+
 function nextPage() {
-    if (gPageIdx < (gBooks.length - PAGE_SIZE)/PAGE_SIZE) gPageIdx++;
+    if (gPageIdx < (gBooks.length - PAGE_SIZE)/(PAGE_SIZE)) gPageIdx++;
     else return;
 }
 
@@ -102,18 +106,24 @@ function prevPage() {
     else return;
 }
 
-function getFirstPage() {
-    gPageIdx = 0;    
+function getDiffPage(pageNum, action) {
+    if (isNaN(pageNum)) {
+        gPageIdx = pageNum.dataset.page - 1;
+    } else if (action === 'create') {
+        gPageIdx;
+    } else if (action === 'delete' && (gPageIdx * gBooks.length) >= (gBooks.length/PAGE_SIZE) * gBooks.length) {
+        gPageIdx--;
+    } else if (action === 'delete') {
+    gPageIdx;
+    }
 }
 
-function getSecondPage() {
-    gPageIdx = 1;
+function checkIfFirstPage() {
+    if(gPageIdx <= 0)  return true;
+    else return false;
 }
 
-function getThirdPage() {
-    gPageIdx = 2;
-}
-
-function getFourthPage() {
-    gPageIdx = 3;
+function checkIfLastPage() {
+    if(gPageIdx === Math.floor((gBooks.length - PAGE_SIZE)/(PAGE_SIZE)) + 1 || gPageIdx === (gBooks.length - PAGE_SIZE)/(PAGE_SIZE)) return true;
+    else return false;
 }
