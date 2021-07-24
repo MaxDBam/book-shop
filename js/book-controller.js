@@ -3,7 +3,11 @@
 function onInit() {
     createBooks();
     renderBooks();
+    renderPages();
+    document.querySelector('.prev-page').disabled = checkIfFirstPage();
+    document.querySelector('.next-page').disabled = checkIfLastPage();
     document.querySelector('.first-page').classList.add('active');
+    document.querySelector('.first-page').style.cursor = 'auto';
 }
 
 function renderBooks() {
@@ -24,13 +28,31 @@ function renderBooks() {
     elTableTBody.innerHTML = strHtmls.join('');
 }
 
+function renderPages() {
+    var books = getSumOfBooks();
+    var elPaging = document.querySelector('.paging');
+    var numOfPages = 0;
+    var strHtmls = books.map((book, idx) => {
+        if (idx % PAGE_SIZE === 0) {
+            const isItTheFirstPage = (numOfPages === 0) ? 'first-page' : '';
+            numOfPages++;
+            return `<button class="${isItTheFirstPage} page" data-page="${numOfPages}" onclick="onToADiffPage(this)">${numOfPages}</button>`
+        }
+    });
+    const disabledBtnOrNot = (checkIfFirstPage() || checkIfLastPage()) ? 'disabled' : '';
+    elPaging.innerHTML = `<button class="prev-page" onclick="onPrevPage()" ${disabledBtnOrNot}>&lt;&lt;</button>`;
+    // elPaging.innerHTML += '<button class="first-page page" onclick="onToFirstPage()">1</button>';
+    elPaging.innerHTML += strHtmls.join('');
+    elPaging.innerHTML += `<button class="next-page" onclick="onNextPage()" ${disabledBtnOrNot}>&gt;&gt;</button>`;
+}
+
 function onUpdateBook(bookId) {
     var book = getBookById(bookId);
     onAddBook();
     const elBookEditOrAdd = document.querySelector('.book-editor-add');
     const elBookTitleInput = elBookEditOrAdd.querySelector('input[name="title"]');
     const elBookPriceInput = elBookEditOrAdd.querySelector('input[name="price"]');
-    
+
     elBookTitleInput.value = book.title;
     elBookPriceInput.value = book.price;
 }
@@ -38,6 +60,9 @@ function onUpdateBook(bookId) {
 function onRemoveBook(bookId) {
     removeBook(bookId);
     renderBooks();
+    renderPages();
+    onToADiffPage('', 'delete');
+    renderDefaultCursorIfFirstOrLastPage();
 }
 
 function onAddBook() {
@@ -64,6 +89,9 @@ function onSaveBook() {
     elBookTitleInput.value = '';
     elBookPriceInput.value = '';
     elBookEditOrAdd.hidden = true;
+    renderPages();
+    onToADiffPage('', 'create')
+    renderDefaultCursorIfFirstOrLastPage();
 }
 
 function onReadBook(bookId) {
@@ -77,7 +105,7 @@ function onReadBook(bookId) {
 }
 
 function onCloseModal() {
-    if(!document.querySelector('.modal').hidden) {
+    if (!document.querySelector('.modal').hidden) {
         document.querySelector('.modal').hidden = true;
     } else document.querySelector('.modal').hidden = false;
 }
@@ -86,7 +114,7 @@ function onRateBook(num) {
     var elSpanRateBook = document.querySelector('.book-rate');
     if (num > 0 && elSpanRateBook.innerHTML < 10) {
         elSpanRateBook.innerHTML++;
-    } else if(num < 0 && elSpanRateBook.innerHTML > 0) {
+    } else if (num < 0 && elSpanRateBook.innerHTML > 0) {
         elSpanRateBook.innerHTML--;
     }
 }
@@ -98,69 +126,81 @@ function onSortChange(sortBy) {
 
 function onNextPage() {
     nextPage();
-    var currPage = getCurrentPage();
-    if (currPage === 0) onToFirstPage();
-    if (currPage === 1) onToSecondPage();
-    if (currPage === 2) onToThirdPage();
-    if (currPage === 3) onToFourthPage();
+    const currPage = getCurrentPage();
+    const elPages = document.querySelectorAll('.page');
+
+    elPages.forEach(function (btn, idx) {
+        if ((currPage + 1).toString() === elPages[idx].dataset.page) {
+            elPages[idx].classList.add('active');
+            elPages[idx].style.cursor = 'auto';
+        } else {
+            elPages[idx].classList.remove('active');
+            elPages[idx].style.cursor = 'pointer';
+        } 
+    });
+    renderDefaultCursorIfFirstOrLastPage();
     renderBooks();
 }
 
 function onPrevPage() {
     prevPage();
     var currPage = getCurrentPage();
-    if (currPage === 0) onToFirstPage();
-    if (currPage === 1) onToSecondPage();
-    if (currPage === 2) onToThirdPage();
-    if (currPage === 3) onToFourthPage();
+    const elPages = document.querySelectorAll('.page');
+
+    elPages.forEach(function (btn, idx) {
+        if ((currPage + 1).toString() === elPages[idx].dataset.page) {
+            elPages[idx].classList.add('active');
+            elPages[idx].style.cursor = 'auto';
+        } else {
+            elPages[idx].classList.remove('active');
+            elPages[idx].style.cursor = 'pointer';
+        } 
+    });
+    renderDefaultCursorIfFirstOrLastPage();
     renderBooks();
 }
 
-function onToFirstPage() {
-    const elFirstPage = document.querySelector('.first-page');
-    var elBtnPages = document.getElementsByClassName('page');
-    for (let i = 0; i < elBtnPages.length; i++) {
-        elBtnPages[i].classList.remove('active');
+function onToADiffPage(page, action) {
+    renderPages();
+    const diffPage = document.querySelectorAll('.page');
+    var clickedPage;
+    if (!page && getCurrentPage() < getSumOfBooks().length / PAGE_SIZE) {
+        page = getCurrentPage() + 1;
+    } else if (!page && getCurrentPage() === getSumOfBooks().length / PAGE_SIZE) {
+        page = getCurrentPage();
+    } else clickedPage = page.dataset.page;
+
+    diffPage.forEach(function (btn, idx) {
+        if (clickedPage !== '' && diffPage[idx].dataset.page === clickedPage) {
+            diffPage[idx].classList.add('active');
+            diffPage[idx].style.cursor = 'auto';
+        } else if (!clickedPage && diffPage[idx].dataset.page === page.toString()) {
+            diffPage[idx].classList.add('active');
+            diffPage[idx].style.cursor = 'auto';
+        } else {
+            diffPage[idx].classList.remove('active');
+            diffPage[idx].style.cursor = 'pointer';
+        }
+    });
+    getDiffPage(page, action);
+    renderBooks();
+    renderDefaultCursorIfFirstOrLastPage();
+}
+
+function renderDefaultCursorIfFirstOrLastPage() {
+    document.querySelector('.prev-page').disabled = checkIfFirstPage();
+    document.querySelector('.next-page').disabled = checkIfLastPage();
+    if (checkIfFirstPage()) {
+        document.querySelector('.prev-page').style.cursor = 'auto';
+    } 
+    else {
+        document.querySelector('.prev-page').style.cursor = 'pointer';
     }
-    elFirstPage.classList.add('active');
-    getFirstPage();
-    renderBooks();
-}
-
-function onToSecondPage() {
-    const elSecondPage = document.querySelector('.second-page');
-    var elBtnPages = document.getElementsByClassName('page');
-    for (let i = 0; i < elBtnPages.length; i++) {
-        elBtnPages[i].classList.remove('active');
+    document.querySelector('.next-page').disabled = checkIfLastPage();
+    if (checkIfLastPage()) {
+        document.querySelector('.next-page').style.cursor = 'auto';
+    } 
+    else {
+        document.querySelector('.next-page').style.cursor = 'pointer';
     }
-    elSecondPage.classList.add('active');
-    getSecondPage();
-    renderBooks();
 }
-
-function onToThirdPage() {
-    const elThirdPage = document.querySelector('.third-page');
-    var elBtnPages = document.getElementsByClassName('page');
-    for (let i = 0; i < elBtnPages.length; i++) {
-        elBtnPages[i].classList.remove('active');
-    }
-    elThirdPage.classList.add('active');
-    getThirdPage();
-    renderBooks();
-}
-
-function onToFourthPage() {
-    const elFourthPage = document.querySelector('.fourth-page');
-    var elBtnPages = document.getElementsByClassName('page');
-    for (let i = 0; i < elBtnPages.length; i++) {
-        elBtnPages[i].classList.remove('active');
-    }
-    elFourthPage.classList.add('active');
-    getFourthPage();
-    renderBooks();
-}
-
-// function renderPages() {
-//     var elPaging = document.querySelector('.paging');
-
-// }
