@@ -29,6 +29,7 @@ function _createBook(title, price, imgUrl) {
         title: title,
         price: price,
         imgUrl: imgUrl,
+        rate: 0,
         desc: makeLorem()
     }
 }
@@ -70,6 +71,12 @@ function getBookById(bookId) {
 function checkIfBookAlreadyExists(bookTitle) {
     var book = gBooks.find(chosenBook => bookTitle === chosenBook.title);
     return book;
+}
+
+function updateBookRating(bookId, newRate) {
+    const book = gBooks.find(chosenBook => bookId === chosenBook.id);
+    book.rate = newRate;
+    _saveBooksToStorage();
 }
 
 function bookComparator(book1, book2) {
