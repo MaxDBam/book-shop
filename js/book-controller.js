@@ -18,7 +18,7 @@ function renderBooks() {
         <tr>
             <td>${book.id}</td>
             <td>${book.title}</td>
-            <td>${book.price}</td>
+            <td>$${book.price}</td>
             <td><button onclick="onReadBook('${book.id}')" class="read-btn">Read</button></td>
             <td><button onclick="onUpdateBook('${book.id}')" class="update-btn">Update</button></td>
             <td><button onclick="onRemoveBook('${book.id}')" class="delete-btn">Delete</button></td>
@@ -82,6 +82,8 @@ function onSaveBook() {
     var book = checkIfBookAlreadyExists(title);
     if (book) {
         updateBook(book.id, price);
+    } else if (!title) {
+        return;
     } else {
         addBook(title, price);
     }
@@ -99,24 +101,26 @@ function onReadBook(bookId) {
     var elModal = document.querySelector('.modal');
     elModal.querySelector('h4').innerText = book.title;
     elModal.querySelector('img').src = book.imgUrl;
+    elModal.querySelector('span').innerHTML = book.rate;
     elModal.querySelector('p').innerText = book.desc;
-    elModal.querySelector('h5').innerText = book.price;
+    elModal.querySelector('h5').innerText = '$' + book.price;
     elModal.hidden = false;
 }
 
 function onCloseModal() {
-    if (!document.querySelector('.modal').hidden) {
         document.querySelector('.modal').hidden = true;
-    } else document.querySelector('.modal').hidden = false;
 }
 
 function onRateBook(num) {
+    var clickedBookToCheck = document.querySelector('h4').innerText;
+    var book = checkIfBookAlreadyExists(clickedBookToCheck);
     var elSpanRateBook = document.querySelector('.book-rate');
-    if (num > 0 && elSpanRateBook.innerHTML < 10) {
-        elSpanRateBook.innerHTML++;
-    } else if (num < 0 && elSpanRateBook.innerHTML > 0) {
-        elSpanRateBook.innerHTML--;
+    if (num > 0 && book.rate < 10) {
+        elSpanRateBook.innerHTML = ++book.rate;
+    } else if (num < 0 && book.rate > 0) {
+        elSpanRateBook.innerHTML = --book.rate;
     }
+    updateBookRating(book.id, elSpanRateBook.innerHTML);
 }
 
 function onSortChange(sortBy) {
@@ -140,6 +144,7 @@ function onNextPage() {
     });
     renderDefaultCursorIfFirstOrLastPage();
     renderBooks();
+    onCloseModal();
 }
 
 function onPrevPage() {
@@ -158,6 +163,7 @@ function onPrevPage() {
     });
     renderDefaultCursorIfFirstOrLastPage();
     renderBooks();
+    onCloseModal();
 }
 
 function onToADiffPage(page, action) {
@@ -185,6 +191,7 @@ function onToADiffPage(page, action) {
     getDiffPage(page, action);
     renderBooks();
     renderDefaultCursorIfFirstOrLastPage();
+    onCloseModal();
 }
 
 function renderDefaultCursorIfFirstOrLastPage() {
